@@ -7,6 +7,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.google.android.gms.auth.api.Auth;
@@ -33,8 +35,11 @@ import java.util.concurrent.TimeUnit;
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.OnConnectionFailedListener,View.OnClickListener{
    private static int   SIGN_IN=0;
     private GoogleApiClient ac;
-    private FirebaseAuth fa;
+    private FirebaseAuth fa,femail;
     private FirebaseAuth.AuthStateListener mauth;
+
+    EditText email,pass;
+    Button login,reg;
 
 
 
@@ -42,17 +47,28 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        email=(EditText)findViewById(R.id.email);
+        pass=(EditText)findViewById(R.id.password);
+        login=(Button)findViewById(R.id.login);
+        reg=(Button)findViewById(R.id.reg);
+
+        login.setOnClickListener(this);
+        reg.setOnClickListener(this);
+
+
         fa=FirebaseAuth.getInstance();
+        femail=FirebaseAuth.getInstance();
         mauth=new FirebaseAuth.AuthStateListener(){
 
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user=firebaseAuth.getCurrentUser();
                 if(user!=null){
+
                     Toast.makeText(MainActivity.this,"successfull"+user.getEmail(),Toast.LENGTH_LONG).show();
                 }
                 else {
-                    Toast.makeText(MainActivity.this,"sign in error",Toast.LENGTH_LONG).show();
+
                 }
                 }
             };
@@ -116,10 +132,46 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.O
 
     }
 
+    private void login(){
+        String mail=email.getText().toString();
+        String pswd=pass.getText().toString();
+        if(!mail.isEmpty()&&!pswd.isEmpty()) {
+            femail.signInWithEmailAndPassword(mail, pswd)
+                    .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<AuthResult> task) {
+                            if (!task.isSuccessful()) {
+                                Toast.makeText(MainActivity.this, "sign in problem", Toast.LENGTH_LONG).show();
+                            }
+                            else{
+                                Toast.makeText(MainActivity.this,"login successfull",Toast.LENGTH_LONG).show();
+                            }
+                        }
+                    });
+        }
+        else {
+            Toast.makeText(MainActivity.this,"fields are empty",Toast.LENGTH_LONG).show();
+        }
+    }
+
     @Override
     public void onClick(View view) {
-       if(view.getId()==R.id.gid) {
-           signIn();
-       }
+        switch (view.getId()){
+            case R.id.gid:
+                signIn();
+                break;
+            case R.id.login:
+                login();
+
+                break;
+            case R.id.reg:
+                startActivity(new Intent(this,Register.class));
+                break;
+
+        }
+
+
+
+
     }
 }
